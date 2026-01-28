@@ -313,8 +313,8 @@ case $OPTION in
     remove_old_assets
     install_arelix_files
 
-    install_bolt_loader
     install_dependencies
+    install_bolt_loader
     migrate_db
     clear_cache
     set_permissions
