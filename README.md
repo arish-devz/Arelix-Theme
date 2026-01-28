@@ -23,42 +23,11 @@
 - A server with **Pterodactyl Panel (v1.x)** installed.
 - Root or Sudo access to the server.
 
-### 📦 Option 1: Install Theme (Standard)
-If you already have Pterodactyl Panel installed, run these **three commands** to install the theme:
+### ⚡ Quick Start
+Run this single command to install the theme:
 
-1. **Download the installer:**
 ```bash
-wget -O install.sh https://raw.githubusercontent.com/arish-devz/Arelix-Theme/main/install.sh
-```
-
-2. **Make it executable:**
-```bash
-chmod +x install.sh
-```
-
-3. **Run the installer:**
-```bash
-sudo ./install.sh
-```
-
----
-
-### ⚡ Option 2: Install Pterodactyl Panel (Fresh Server)
-If you have a fresh VPS and need to install Pterodactyl Panel first, use our setup wrapper:
-
-1. **Download the setup script:**
-```bash
-wget -O setup_panel.sh https://raw.githubusercontent.com/arish-devz/Arelix-Theme/main/setup_panel.sh
-```
-
-2. **Make it executable:**
-```bash
-chmod +x setup_panel.sh
-```
-
-3. **Run the setup:**
-```bash
-sudo ./setup_panel.sh
+wget -O install.sh https://raw.githubusercontent.com/arish-devz/Arelix-Theme/main/install.sh && chmod +x install.sh && sudo ./install.sh
 ```
 
 ---

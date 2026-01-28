@@ -133,8 +133,21 @@ install_arelix_files() {
 install_dependencies() {
     echo ">> [DEPENDENCIES] Installing dependencies..."
     cd "$PANEL_PATH" || exit
-    # Run composer to ensure new packages are installed
-    composer install --no-dev --optimize-autoloader
+    
+    # Fix for missing WebAuthn trait
+    echo ">> [DEPENDENCIES] Checking/Installing laragear/webauthn..."
+    
+    if command -v composer >/dev/null 2>&1; then
+        # Require specific version or latest
+        composer require laragear/webauthn --no-interaction
+        composer install --no-dev --optimize-autoloader
+    else
+        echo ">> [WARNING] Composer not found. Attempting to install composer..."
+        curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+        
+        composer require laragear/webauthn --no-interaction
+        composer install --no-dev --optimize-autoloader
+    fi
 }
 
 migrate_db() {
@@ -237,8 +250,6 @@ install_bolt_loader() {
         fi
     fi
 
-    # Loader logic updated to fetch from GitHub
-    
     # Construct Download URL based on BASE_URL
     DOWNLOAD_URL="$BASE_URL/assets/loaders/$LOADER_NAME"
 
