@@ -135,6 +135,9 @@ install_dependencies() {
     echo ">> [DEPENDENCIES] Installing dependencies..."
     cd "$PANEL_PATH" || exit
     
+    # Clear bootstrap cache to prevent issues with stale configs/services during upgrade
+    rm -f bootstrap/cache/*.php
+    
     # Fix for missing WebAuthn trait
     echo ">> [DEPENDENCIES] Checking/Installing laragear/webauthn..."
     
