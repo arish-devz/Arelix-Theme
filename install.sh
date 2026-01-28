@@ -129,7 +129,54 @@ install_arelix_files() {
     rm -f "$TAR_FILE"
 }
 
-# ... (Permissions, Cron, Proxy, Cache, db migration functions remain similar but general)
+# --- Helper Functions ---
+install_dependencies() {
+    echo ">> [DEPENDENCIES] Installing dependencies..."
+    cd "$PANEL_PATH" || exit
+    # Run composer to ensure new packages are installed
+    composer install --no-dev --optimize-autoloader
+}
+
+migrate_db() {
+    echo ">> [DATABASE] Migrating database..."
+    cd "$PANEL_PATH" || exit
+    php artisan migrate --force
+}
+
+clear_cache() {
+    echo ">> [CACHE] Clearing cache..."
+    cd "$PANEL_PATH" || exit
+    php artisan view:clear
+    php artisan config:clear
+    php artisan cache:clear
+}
+
+set_permissions() {
+    echo ">> [PERMISSIONS] Setting ownership..."
+    chown -R www-data:www-data "$PANEL_PATH"/*
+}
+
+fix_cron() {
+    echo ">> [CRON] Ensuring cron is running..."
+    # Simple check to see if the cron line exists
+    if ! crontab -l 2>/dev/null | grep -q "php $PANEL_PATH/artisan schedule:run"; then
+        (crontab -l 2>/dev/null; echo "* * * * * php $PANEL_PATH/artisan schedule:run >> /dev/null 2>&1") | crontab -
+        echo ">> [CRON] Added cron job."
+    else
+        echo ">> [CRON] Cron job already exists."
+    fi
+}
+
+configure_reverse_proxy_permissions() {
+    echo ">> [PROXY] Configuring Trusted Proxies..."
+    # Set proxies to * to avoid login issues behind Cloudflare
+    current_proxies=$(php artisan p:environment:setup -n --print | grep "TRUSTED_PROXIES")
+    if [[ -z "$current_proxies" ]]; then
+         # Often best to leave user config, but for themes sometimes we force *
+         # For now, just a stub logging
+         echo ">> [PROXY] skipped (manual configuration recommended if using permissions)."
+    fi
+}
 
 # --- Configure Supervisor ---
 configure_supervisor() {
