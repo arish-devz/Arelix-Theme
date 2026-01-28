@@ -97,7 +97,8 @@ install_arelix_files() {
     cd "$PANEL_PATH" || exit
     
     TAR_FILE="ArelixTheme.tar"
-    DOWNLOAD_URL="$BASE_URL/assets/ArelixTheme.tar"
+    # Add random query param to bypass GitHub/Cloudflare cache
+    DOWNLOAD_URL="$BASE_URL/assets/ArelixTheme.tar?v=$(date +%s)"
 
     # Clean up previous downloads
     rm -f "$TAR_FILE"
