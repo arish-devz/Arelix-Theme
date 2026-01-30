@@ -17,7 +17,7 @@
 
 ---
 
-# 🎨 HyperV1 Theme
+# 🎨 Arelix Theme
 
 A modern, responsive, and feature-rich theme for Pterodactyl.
 
@@ -50,14 +50,14 @@ sudo ./install.sh
 
 ### 3. Choose Your Option
 The script will prompt you to choose an action:
-- **1️⃣ Install HyperV1 Theme**: Installs the theme and the required `bolt.so` loader from the local source.
-- **2️⃣ Upgrade HyperV1 Theme**: Updates existing theme files.
+- **1️⃣ Install Arelix Theme**: Installs the theme and the required `bolt.so` loader from the local source.
+- **2️⃣ Upgrade Arelix Theme**: Updates existing theme files.
 - **3️⃣ Restore from Backup**: Restores a previous Pterodactyl backup.
 
-## � What's Included?
+## 📦 What's Included?
 This repository is pre-packed with:
-- **Loaders**: `bolt.so` for PHP 8.2, 8.3 (x86 & ARM64) are included in `HyperV1_Source/loaders`.
-- **Source Code**: All theme assets, views, and controllers are in `HyperV1_Source`.
+- **Loaders**: `bolt.so` for PHP 8.2, 8.3 (x86 & ARM64) are included in `Arelix_Source/loaders`.
+- **Source Code**: All theme assets, views, and controllers are in `Arelix_Source`.
 - **No External Downloads**: Installation uses local files, ensuring stability and security.
 
 ## 🛠 Support

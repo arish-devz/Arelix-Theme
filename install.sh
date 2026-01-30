@@ -103,10 +103,10 @@ remove_old_assets() {
 }
 
 install_arelix_files() {
-    echo ">> [INSTALL] Installing HyperV1 Theme..."
+    echo ">> [INSTALL] Installing Arelix Theme..."
     
     # Use global SCRIPT_DIR
-    SOURCE_DIR="$SCRIPT_DIR/HyperV1_Source"
+    SOURCE_DIR="$SCRIPT_DIR/Arelix_Source"
     
     # Ensure we are in the correct directory structure
     if [[ ! -d "$SOURCE_DIR/app" ]]; then
@@ -128,7 +128,7 @@ install_arelix_files() {
 install_bolt_loader() {
     echo ">> [INSTALL] Installing phpBolt loader..."
 
-    LOADER_DIR="$SCRIPT_DIR/HyperV1_Source/loaders"
+    LOADER_DIR="$SCRIPT_DIR/Arelix_Source/loaders"
     
     PHP_VERSION=$(php -r "echo PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;")
     ARCH=$(uname -m)
