@@ -55,10 +55,11 @@ The script will prompt you to choose an action:
 - **3️⃣ Restore from Backup**: Restores a previous Pterodactyl backup.
 
 ## 📦 What's Included?
-This repository is pre-packed with:
-- **Loaders**: `bolt.so` for PHP 8.2, 8.3 (x86 & ARM64) are included in `Arelix_Source/loaders`.
-- **Source Code**: All theme assets, views, and controllers are in `Arelix_Source`.
-- **No External Downloads**: Installation uses local files, ensuring stability and security.
+This repository contains:
+- **Installer**: `install.sh` for one-click setup.
+- **Theme Package**: Pre-packaged theme assets in `release/ArelixTheme.tar.gz`.
+- **Loaders**: included within the package for seamless installation.
+- **No Clutter**: Source code is archived to keep the repository clean and professional.
 
 ## 🛠 Support
 For support, please open an issue on GitHub or contact the developer.

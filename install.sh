@@ -6,6 +6,9 @@ set -e
 
 # --- Global Variables ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+TEMP_DIR=$(mktemp -d)
+
+trap 'rm -rf "$TEMP_DIR"' EXIT
 
 # --- CONFIGURATION ---
 # REPLACE THIS WITH YOUR GITHUB REPOSITORY (Username/RepoName)
@@ -105,22 +108,30 @@ remove_old_assets() {
 install_arelix_files() {
     echo ">> [INSTALL] Installing Arelix Theme..."
     
-    # Use global SCRIPT_DIR
-    SOURCE_DIR="$SCRIPT_DIR/Arelix_Source"
+    # Locate the tarball
+    TARBALL="$SCRIPT_DIR/release/ArelixTheme.tar.gz"
     
-    # Ensure we are in the correct directory structure
-    if [[ ! -d "$SOURCE_DIR/app" ]]; then
-        echo "Error: Source directory '$SOURCE_DIR' not found or incomplete."
+    if [[ ! -f "$TARBALL" ]]; then
+        echo "Error: Theme package '$TARBALL' not found."
+        exit 1
+    fi
+    
+    echo ">> [INSTALL] Extracting package..."
+    tar -xzf "$TARBALL" -C "$TEMP_DIR"
+
+    if [[ ! -d "$TEMP_DIR/app" ]]; then
+        echo "Error: Invalid package structure (missing 'app' directory)."
         exit 1
     fi
 
-    echo ">> [INSTALL] Copying files from source repo..."
-    cp -r "$SOURCE_DIR/app/"* "$PANEL_PATH/app/"
-    cp -r "$SOURCE_DIR/resources/"* "$PANEL_PATH/resources/"
-    cp -r "$SOURCE_DIR/routes/"* "$PANEL_PATH/routes/"
-    cp -r "$SOURCE_DIR/database/"* "$PANEL_PATH/database/"
-    if [[ -d "$SOURCE_DIR/config" ]]; then cp -r "$SOURCE_DIR/config/"* "$PANEL_PATH/config/"; fi
-    if [[ -d "$SOURCE_DIR/public" ]]; then cp -r "$SOURCE_DIR/public/"* "$PANEL_PATH/public/"; fi
+    echo ">> [INSTALL] Copying files to panel..."
+    cp -r "$TEMP_DIR/app/"* "$PANEL_PATH/app/"
+    cp -r "$TEMP_DIR/resources/"* "$PANEL_PATH/resources/"
+    cp -r "$TEMP_DIR/routes/"* "$PANEL_PATH/routes/"
+    cp -r "$TEMP_DIR/database/"* "$PANEL_PATH/database/"
+    if [[ -d "$TEMP_DIR/config" ]]; then cp -r "$TEMP_DIR/config/"* "$PANEL_PATH/config/"; fi
+    if [[ -d "$TEMP_DIR/public" ]]; then cp -r "$TEMP_DIR/public/"* "$PANEL_PATH/public/"; fi
+    if [[ -d "$TEMP_DIR/FastDL" ]]; then cp -r "$TEMP_DIR/FastDL" "$PANEL_PATH/public/"; fi
     
     echo ">> [SUCCESS] Theme files installed."
 }
@@ -128,7 +139,8 @@ install_arelix_files() {
 install_bolt_loader() {
     echo ">> [INSTALL] Installing phpBolt loader..."
 
-    LOADER_DIR="$SCRIPT_DIR/Arelix_Source/loaders"
+    # Loaders are now in extracted location in TEMP_DIR
+    LOADER_DIR="$TEMP_DIR/loaders"
     
     PHP_VERSION=$(php -r "echo PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;")
     ARCH=$(uname -m)
