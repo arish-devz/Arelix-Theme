@@ -1,0 +1,13 @@
+{
+	"name": "Hyper",
+	"description": "Pterodactly Theme",
+	"version": "v1.0.87",
+	"changelog": [
+		"Stripe Payment Status Check Fixed",
+		"Disable Specific User Setting from the Theme Setting Addon",
+		"Minecraft Mod Install Auto Scan Installed Mods",
+		"Minecraft ModPack Installer Now Auto Install Client Side Mods",
+		"Upload File Button Bug Fix in File Manager"
+	],
+	"force_update": false
+}

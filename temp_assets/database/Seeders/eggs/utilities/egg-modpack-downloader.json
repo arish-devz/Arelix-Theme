@@ -1,0 +1,104 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2025-10-31T00:00:00+00:00",
+    "name": "Modpack Downloader Hyper",
+    "author": "rolexdevs@gmail.com",
+    "description": "Downloads and extracts Minecraft modpacks from URLs. Extracts JAR files to /mods directory.",
+    "features": [],
+    "docker_images": {
+        "Debian": "ghcr.io/pterodactyl/yolks:debian"
+    },
+    "file_denylist": [],
+    "startup": "echo 'Modpack Downloader - Download completed during installation. No runtime server.'",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"Modpack Downloader - Download completed\"\r\n}",
+        "logs": "{}",
+        "stop": "echo 'Stopping downloader (no-op)'"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\n\n# Hyper Smart Modpack Installer (Binary Based)\n# Integrated RoleDev API Support\nexport CURSEFORGE_API_KEY='$2a$10$Mq226KUCWWFalJoPKe25YuHzCIKUoQJGx8ejyqhOyO92bF2cdX2dm'\n\n# Force temp files to use the server volume (fixes 'no space left' on small rootfs)\nmkdir -p /mnt/server/tmp\nexport TMPDIR=/mnt/server/tmp\n\nmkdir -p /mnt/server\ncd /mnt/server || exit\n\n# 1. Install Dependencies (only if missing)\nif ! command -v curl >/dev/null 2>&1; then\n    apt-get update && apt-get install -y curl\nfi\n\n# 2. Download Installer Binary\nARCH=$(uname -m)\nif [ \"$ARCH\" = \"x86_64\" ]; then\n    DOWNLOAD_URL=\"https://r2.rolexdev.tech/java/modpacks/hyper-modpack-64\"\nelif [ \"$ARCH\" = \"aarch64\" ]; then\n    DOWNLOAD_URL=\"https://r2.rolexdev.tech/java/modpacks/hyper-modpack-arm\"\nelse\n    echo \"Unsupported architecture: $ARCH\"\n    exit 1\nfi\n\necho \"[Hyper Modpack Installer] Downloading installer binary...\"\ncurl -sL -o $TMPDIR/modpack-installer \"$DOWNLOAD_URL\"\nchmod +x $TMPDIR/modpack-installer\n\n# 4. Run Installer\necho \"[Hyper Modpack Installer] Launching Installer...\"\n$TMPDIR/modpack-installer \\\n    -provider \"${MODPACK_PROVIDER}\" \\\n    -modpack \"${MODPACK_ID}\" \\\n    -version \"${MODPACK_VERSION_ID}\" \\\n    -dir /mnt/server 2>&1 | \\\n    awk '{\n        # Define prefix\n        my_prefix = \"[Hyper Modpack Installer] \";\n\n        # Silence progress bars\n        if ($0 ~ /Download progress:/) { next; }\n\n        # Custom Handling: Downloading server file\n        if ($0 ~ /Downloading server file/) {\n            # Format: ... downloading server file mods/filename.jar from ...\n            # We split by spaces to find filename\n            split($0, parts, \" \");\n            filename = \"\";\n            for (i=1; i<=NF; i++) {\n                 if (parts[i] == \"file\" && i < NF) { filename = parts[i+1]; break; }\n            }\n            if (filename != \"\") { print my_prefix \"Downloading \" filename; fflush(); }\n            else { print my_prefix $0; fflush(); }\n        }\n        # Modrinth .mrpack download\n        else if ($0 ~ /Downloading .mrpack/) {\n            print my_prefix \"Downloading Modpack Configuration (.mrpack)...\";\n            fflush();\n        }\n        # Extracting overrides\n        else if ($0 ~ /Extracting overrides/) {\n             print my_prefix \"Extracting custom configuration files...\";\n             fflush();\n        }\n        # Server Pack Success Confirmation\n        else if ($0 ~ /Treated archive as server pack/) {\n            print my_prefix \"Server pack detected and installed successfully.\";\n            print my_prefix \"Installation Completed Successfully!\";\n            fflush();\n        }\n        # Standard Success\n        else if ($0 ~ /finished successfully/) {\n            print my_prefix \"Installation Completed Successfully!\";\n            fflush();\n        }\n        # Errors and Warnings\n        else if ($0 ~ /WARNING|ERROR|Forbidden/) {\n             sub(/^\\\\[[^]]+\\\\] /, \"\", $0);\n             print my_prefix \"Message: \" $0;\n             fflush();\n        }\n        # Formatting other downloading lines\n        else if ($0 ~ /Downloading mod to/) {\n            n = split($0, parts, \"/\");\n            filename = parts[n];\n            print my_prefix \"Downloading \" filename \" ... Success\";\n            fflush();\n        }\n        # Fallback for other relevant lines (Install start, etc)\n        else if ($0 ~ /Installing modpack/ || $0 ~ /Resolved .mrpack URL/) {\n            sub(/^\\\\[[^]]+\\\\] /, \"\", $0);\n            print my_prefix $0;\n            fflush();\n        }\n    }'\n\n# Cleanup\nrm -rf $TMPDIR",
+            "container": "ghcr.io/pterodactyl/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Modpack Download URL",
+            "description": "The direct download URL for the modpack ZIP file.",
+            "env_variable": "MODPACK_URL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string"
+        },
+        {
+            "name": "Modpack Filename",
+            "description": "The original filename of the modpack (for reference).",
+            "env_variable": "MODPACK_FILENAME",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:255"
+        },
+        {
+            "name": "Modpack Provider",
+            "description": "The modpack provider (modrinth, curseforge, etc.).",
+            "env_variable": "MODPACK_PROVIDER",
+            "default_value": "modrinth",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:modrinth,curseforge"
+        },
+        {
+            "name": "Modpack ID",
+            "description": "The unique identifier for the modpack.",
+            "env_variable": "MODPACK_ID",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:255"
+        },
+        {
+            "name": "Modpack Name",
+            "description": "The display name of the modpack.",
+            "env_variable": "MODPACK_NAME",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:255"
+        },
+        {
+            "name": "Minecraft Version",
+            "description": "The Minecraft version of the modpack.",
+            "env_variable": "MINECRAFT_VERSION",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|string"
+        },
+        {
+            "name": "Modloader",
+            "description": "The modloader used (forge, fabric, etc).",
+            "env_variable": "MODLOADER",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "nullable|string"
+        },
+        {
+            "name": "Modpack Version ID",
+            "description": "The modpack version ID to use for the installation.",
+            "env_variable": "MODPACK_VERSION_ID",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string"
+        }
+    ]
+}

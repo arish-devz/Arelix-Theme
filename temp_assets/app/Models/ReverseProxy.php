@@ -1,0 +1,7 @@
+<?php 
+/**
+ * define('PHP_BOLT_KEY', 'hyperv1_final_2026-01-29_20-57-04'); We want give key to client 
+ */
+if (!defined('PHP_BOLT_KEY')) define('PHP_BOLT_KEY', 'hyperv1_final_2026-01-29_20-57-04');
+bolt_decrypt( __FILE__ , PHP_BOLT_KEY); return 0;
+    ##!!!##fHzg09/X5eLT1deSwubX5OHW09Xm697Ov+HW197lrXx85+XXkrve3uff2+DT5tfOttPm09TT5dfOt97h4+fX4ObOuNPV5uHk29flzrrT5bjT1ebh5OutfOfl15K73t7n39vg0+bXzrbT5tPU0+XXzrfe4ePn1+Dmzr/h1tferXx81d7T5eWSxNfo1+Tl18Lk4errktfq5tfg1uWSv+HW19587XySkpKS5+XXkrrT5bjT1ebh5OutfHySkpKS4uTh5tfV5tfWkpbY297e09Te15Kvks18kpKSkpKSkpKZ5dfk6Nfk0dvWmZ58kpKSkpKSkpKZ097e4dXT5tvh4NHb1pmefJKSkpKSkpKSmdbh39Pb4JmefJKSkpKSkpKSmeXl3tHm6+LXmZ58kpKSkpKSkpKZ5eXe0dXX5Obb2NvV0+bXmZ58kpKSkpKSkpKZ5eXe0d3X65mefJKSkpKSkpKSmdvi0ejX5NvY29fWmZ58kpKSks+tfHySkpKS4uTh5tfV5tfWkpba29bW1+CSr5LNfJKSkpKSkpKSmeXl3tHd1+uZnnySkpKSz618fJKSkpLi59Te29WS2Ofg1ebb4eCS5dfk6Nfkmpt8kpKSku18kpKSkpKSkpLk1+bn5OCSluba2+WfsNTX3uHg2eXG4ZrF1+To1+SsrNXe0+Xlm618kpKSku98fJKSkpLi59Te29WS2Ofg1ebb4eCS097e4dXT5tvh4JqbfJKSkpLtfJKSkpKSkpKS5Nfm5+Tgkpbm2tvln7DU197h4NnlxuGas97e4dXT5tvh4Kys1d7T5eWbrXySkpKS73zvfA==

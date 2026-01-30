@@ -100,89 +100,77 @@ remove_old_assets() {
 }
 
 install_arelix_files() {
-    echo ">> [INSTALL] Fetching HyperV1 Theme assets..."
+    echo ">> [INSTALL] Installing HyperV1 Theme..."
     
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
     SOURCE_DIR="$SCRIPT_DIR/HyperV1_Source"
     
-    # Check if we are running from the source repo with the new structure
-    if [[ -d "$SOURCE_DIR/app" ]] && [[ -d "$SOURCE_DIR/resources" ]]; then
-        echo ">> [INFO] Detected source repository in $SOURCE_DIR."
-        read -rp "Install directly from source? (y/N): " INSTALL_SOURCE
-        if [[ "$INSTALL_SOURCE" =~ ^[Yy]$ ]]; then
-            echo ">> [INSTALL] Copying files from source..."
-            cp -r "$SOURCE_DIR/app/"* "$PANEL_PATH/app/"
-            cp -r "$SOURCE_DIR/resources/"* "$PANEL_PATH/resources/"
-            cp -r "$SOURCE_DIR/routes/"* "$PANEL_PATH/routes/"
-            cp -r "$SOURCE_DIR/database/"* "$PANEL_PATH/database/"
-            if [[ -d "$SOURCE_DIR/config" ]]; then cp -r "$SOURCE_DIR/config/"* "$PANEL_PATH/config/"; fi
-            if [[ -d "$SOURCE_DIR/public" ]]; then cp -r "$SOURCE_DIR/public/"* "$PANEL_PATH/public/"; fi
-            
-            echo ">> [SUCCESS] Installed from source."
-            return
-        fi
-    fi
-
-    # Fallback: Download from official source if no local source used
-    TAR_FILE="Hyperv1.tar"
-    DOWNLOAD_URL="https://r2.rolexdev.tech/hyperv1/Hyperv1.tar"
-    
-    rm -f "$TAR_FILE"
-    echo ">> [DOWNLOAD] Downloading from $DOWNLOAD_URL"
-    if command -v curl >/dev/null 2>&1; then
-        curl -fsSL --retry 3 -o "$TAR_FILE" "$DOWNLOAD_URL"
-    elif command -v wget >/dev/null 2>&1; then
-        wget -q -O "$TAR_FILE" "$DOWNLOAD_URL"
-    else
-        echo "Error: curl or wget required."
+    # Ensure we are in the correct directory structure
+    if [[ ! -d "$SOURCE_DIR/app" ]]; then
+        echo "Error: Source directory '$SOURCE_DIR' not found or incomplete."
         exit 1
     fi
+
+    echo ">> [INSTALL] Copying files from source repo..."
+    cp -r "$SOURCE_DIR/app/"* "$PANEL_PATH/app/"
+    cp -r "$SOURCE_DIR/resources/"* "$PANEL_PATH/resources/"
+    cp -r "$SOURCE_DIR/routes/"* "$PANEL_PATH/routes/"
+    cp -r "$SOURCE_DIR/database/"* "$PANEL_PATH/database/"
+    if [[ -d "$SOURCE_DIR/config" ]]; then cp -r "$SOURCE_DIR/config/"* "$PANEL_PATH/config/"; fi
+    if [[ -d "$SOURCE_DIR/public" ]]; then cp -r "$SOURCE_DIR/public/"* "$PANEL_PATH/public/"; fi
     
-    echo ">> [INSTALL] Extracting theme files..."
-    tar -xf "$TAR_FILE" --overwrite
-    rm -f "$TAR_FILE"
+    echo ">> [SUCCESS] Theme files installed."
 }
 
 install_bolt_loader() {
     echo ">> [INSTALL] Installing phpBolt loader..."
 
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+    LOADER_DIR="$SCRIPT_DIR/HyperV1_Source/loaders"
+    
     PHP_VERSION=$(php -r "echo PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;")
     ARCH=$(uname -m)
+    
+    TARGET_LOADER=""
 
     if [[ "$ARCH" == "aarch64" ]]; then
-        if [[ "$PHP_VERSION" != "8.3" ]]; then
+        if [[ "$PHP_VERSION" == "8.3" ]]; then
+            TARGET_LOADER="$LOADER_DIR/bolt-aarch64.so"
+        else
             echo "Error: For aarch64, only PHP 8.3 is supported."
             return
         fi
-        DOWNLOAD_URL="https://r2.rolexdev.tech/hyperv1/loader/bolt-aarch64.so"
     else
-        if [[ "$PHP_VERSION" != "8.2" && "$PHP_VERSION" != "8.3" ]]; then
+        if [[ "$PHP_VERSION" == "8.2" ]]; then
+            TARGET_LOADER="$LOADER_DIR/linux-64-8.2-bolt.so"
+        elif [[ "$PHP_VERSION" == "8.3" ]]; then
+             TARGET_LOADER="$LOADER_DIR/linux-64-8.3-bolt.so"
+        else
             echo "Error: PHP $PHP_VERSION is not supported (8.2 or 8.3 only)."
             return
         fi
-        if [[ "$PHP_VERSION" == "8.2" ]]; then
-            DOWNLOAD_URL="https://r2.rolexdev.tech/hyperv1/loader/linux-64-8.2-bolt.so"
-        else
-            DOWNLOAD_URL="https://r2.rolexdev.tech/hyperv1/loader/linux-64-8.3-bolt.so"
-        fi
     fi
 
-    EXTENSION_DIR=$(php -i | grep "extension_dir" | head -1 | awk -F'=>' '{print $2}' | xargs)
-    TARGET_FILE="$EXTENSION_DIR/bolt.so"
-
-    if [[ ! -f "$TARGET_FILE" ]]; then
-        wget -O "$TARGET_FILE" "$DOWNLOAD_URL"
+    if [[ -f "$TARGET_LOADER" ]]; then
+        EXTENSION_DIR=$(php -i | grep "extension_dir" | head -1 | awk -F'=>' '{print $2}' | xargs)
+        TARGET_FILE="$EXTENSION_DIR/bolt.so"
+        
+        echo ">> [INFO] Copying loader from $TARGET_LOADER to $TARGET_FILE"
+        cp "$TARGET_LOADER" "$TARGET_FILE"
+        
+        # Enable extension
+        for INI in "/etc/php/$PHP_VERSION/cli/php.ini" "/etc/php/$PHP_VERSION/fpm/php.ini"; do
+            if [[ -f "$INI" ]] && ! grep -q "extension=bolt.so" "$INI"; then
+                echo "extension=bolt.so" >> "$INI"
+                echo ">> [INFO] Added extension to $INI"
+            fi
+        done
+        
+        systemctl restart "php$PHP_VERSION-fpm" || true
+        if systemctl is-active --quiet nginx; then systemctl restart nginx; fi
+    else
+        echo "Error: Loader file not found at $TARGET_LOADER"
     fi
-
-    # Enable extension
-    for INI in "/etc/php/$PHP_VERSION/cli/php.ini" "/etc/php/$PHP_VERSION/fpm/php.ini"; do
-        if [[ -f "$INI" ]] && ! grep -q "extension=bolt.so" "$INI"; then
-            echo "extension=bolt.so" >> "$INI"
-        fi
-    done
-    
-    systemctl restart "php$PHP_VERSION-fpm" || true
-    if systemctl is-active --quiet nginx; then systemctl restart nginx; fi
 }
 # --- Helper Functions ---
 install_dependencies() {
