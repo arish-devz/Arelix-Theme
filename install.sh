@@ -191,6 +191,9 @@ install_dependencies() {
     echo ">> [DEPENDENCIES] Installing dependencies..."
     cd "$PANEL_PATH" || exit
     
+    # Silence Composer root version warning
+    export COMPOSER_ROOT_VERSION=1.0.0
+    
     # Clear bootstrap cache to prevent issues with stale configs/services during upgrade
     rm -f bootstrap/cache/*.php
     
