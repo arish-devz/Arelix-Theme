@@ -1,0 +1,206 @@
+====================================
+FastDL Sync Setup Guide
+====================================
+
+# You have to do this setup for every node. Copy FastDL folder to every node.
+
+## Put FastDL Folder in in /FastDL
+## 1. Install Node.js Dependencies
+
+cd /FastDL
+npm init -y
+npm install compressjs
+
+## 2. Install PM2 (Process Manager)
+
+npm install -g pm2
+
+## 3. Create FastDL Web Directory
+
+sudo mkdir -p /var/www/fastdl
+sudo chown -R www-data:www-data /var/www/fastdl
+
+## 4. Create PM2 Logs Directory
+
+mkdir -p /FastDL/logs
+
+## 5. Start FastDL Sync Service
+
+cd /FastDL
+pm2 start ecosystem.config.js
+
+## 6. Save PM2 Process (Survives Reboot)
+
+pm2 save
+pm2 startup
+
+## 7. View Logs
+
+pm2 logs fastdl-sync
+
+====================================
+Nginx Configuration
+====================================
+
+## 8. Create Nginx Config
+
+sudo nano /etc/nginx/sites-available/fastdl
+
+# Paste the following config:
+# ----------------------------------------
+server {
+    listen 80;
+    server_name fastdl.yourdomain.com;
+
+    root /var/www/fastdl;
+    index index.html;
+
+    # Logging
+    access_log /var/log/nginx/fastdl_access.log;
+    error_log /var/log/nginx/fastdl_error.log;
+
+    # Handle /fastdl/ prefix - rewrite to root
+    location /fastdl/ {
+        alias /var/www/fastdl/;
+        autoindex on;
+        
+        # Try original file, then compressed version
+        try_files $uri $uri.bz2 =404;
+
+        add_header Access-Control-Allow-Origin *;
+        expires 1d;
+
+        types {
+            application/x-bzip2 bz2;
+        }
+    }
+
+    location / {
+        autoindex on;
+        autoindex_exact_size off;
+        autoindex_localtime on;
+
+        # Try original file, then compressed version
+        try_files $uri $uri.bz2 =404;
+
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods 'GET, HEAD, OPTIONS';
+        expires 1d;
+        add_header Cache-Control "public, immutable";
+
+        types {
+            application/x-bzip2 bz2;
+        }
+    }
+
+    location /health {
+        return 200 'OK';
+        add_header Content-Type text/plain;
+    }
+}
+
+# ----------------------------------------
+
+## 9. Enable Nginx Site
+
+sudo ln -s /etc/nginx/sites-available/fastdl /etc/nginx/sites-enabled/
+
+## 10. Test and Reload Nginx
+
+sudo nginx -t && sudo systemctl reload nginx
+
+## 11. Enable HTTPS (SSL)
+
+sudo certbot --nginx -d fastdl.yourdomain.com
+# Choose option 2 (Redirect) when prompted
+
+====================================
+PM2 Management Commands
+====================================
+
+# View status
+pm2 status
+
+# View logs
+pm2 logs fastdl-sync
+
+# Restart service
+pm2 restart fastdl-sync
+
+# Stop service
+pm2 stop fastdl-sync
+
+# Delete service
+pm2 delete fastdl-sync
+
+====================================
+Updating Node.js Files
+====================================
+
+## If you need to update the Node.js files (fastdl_sync.js, ecosystem.config.js, etc.):
+
+# 1. Stop all PM2 processes
+pm2 stop all
+
+# 2. Update your Node.js files
+# (Edit fastdl_sync.js, ecosystem.config.js, or other files as needed)
+
+# 3. If you updated dependencies, reinstall them
+cd /FastDL
+npm install
+
+# 4. Restart the FastDL service
+pm2 restart fastdl-sync
+
+# 5. Verify the service is running
+pm2 status
+
+# 6. Check logs for any errors
+pm2 logs fastdl-sync --lines 50
+
+# Alternative: Delete and recreate the PM2 process (if major changes were made)
+pm2 delete fastdl-sync
+pm2 start ecosystem.config.js
+pm2 save
+
+====================================
+Supported Games
+====================================
+
+The FastDL service supports:
+
+1. Garry's Mod (garrysmod folder)
+   - Extensions: .bsp, .mdl, .vmt, .vtf, .vtx, .vvd, .phy, .pcf, .wav, .mp3
+   - Directories: maps, materials, models, sound, resource
+
+2. Counter-Strike 1.6 (cstrike folder)
+   - Extensions: .bsp, .mdl, .wad, .wav, .mp3, .tga, .txt, .res
+   - Directories: maps, models, sound, sprites, gfx
+
+3. Counter-Strike: GO (csgo folder)
+   - Extensions: .bsp, .mdl, .vmt, .vtf, .vtx, .vvd, .phy, .pcf, .wav, .mp3, .vpk
+   - Directories: maps, materials, models, sound, resource
+
+====================================
+FastDL URL Structure
+====================================
+
+https://fastdl.yourdomain.com/<server-uuid>/garrysmod/maps/mapname.bsp.bz2
+https://fastdl.yourdomain.com/<server-uuid>/cstrike/maps/mapname.bsp.bz2
+https://fastdl.yourdomain.com/<server-uuid>/csgo/maps/mapname.bsp.bz2
+
+====================================
+Quick Setup (All Commands)
+====================================
+
+cd /FastDL
+npm init -y
+npm install compressjs
+npm install -g pm2
+sudo mkdir -p /var/www/fastdl
+sudo chown -R www-data:www-data /var/www/fastdl
+mkdir -p logs
+pm2 start ecosystem.config.js
+pm2 save
+pm2 startup
+sudo certbot --nginx -d fastdl.yourdomain.com
