@@ -17,25 +17,51 @@
 
 ---
 
-# 🎨 Theme Installation & Backup 🔄
+# 🎨 HyperV1 Theme
 
-Run the following commands to install, update, or restore your theme easily:
+A modern, responsive, and feature-rich theme for Pterodactyl.
 
-**Important:** You must be root or use `sudo` for these commands. Also, ensure to remove any existing `installer.sh` before proceeding.
+## ✨ Features
+- **Modern Design**: Sleek dark theme with vibrant accents.
+- **Server Splitter**: Efficiently manage sub-servers.
+- **Billing System**: Integrated billing management UI.
+- **Staff Requests**: Handle staff applications request directly.
+- **Self-Contained**: Includes all necessary loaders and assets locally.
 
-After running these commands, please choose your next step:
+## 🚀 Installation & Update
 
-1️⃣ **Install HyperV1 Theme**
-2️⃣ **Upgrade HyperV1 Theme**
-3️⃣ **Restore from Backup**
+**Important:** You must be root or use `sudo` to run the installer.
 
-## 🚀 Install / Update
+### 1. Clone the Repository
+Clone this repository to your server.
 
 ```bash
-wget -O installer.sh https://r2.rolexdev.tech/hyperv1/installer.sh
-chmod +x installer.sh
-sudo ./installer.sh
+git clone https://github.com/arish-devz/Arelix-Theme.git
+cd Arelix-Theme
 ```
+
+### 2. Run the Installer
+Execute the installation script. This script acts as an all-in-one tool to install, update, or restore the theme.
+
+```bash
+chmod +x install.sh
+sudo ./install.sh
+```
+
+### 3. Choose Your Option
+The script will prompt you to choose an action:
+- **1️⃣ Install HyperV1 Theme**: Installs the theme and the required `bolt.so` loader from the local source.
+- **2️⃣ Upgrade HyperV1 Theme**: Updates existing theme files.
+- **3️⃣ Restore from Backup**: Restores a previous Pterodactyl backup.
+
+## � What's Included?
+This repository is pre-packed with:
+- **Loaders**: `bolt.so` for PHP 8.2, 8.3 (x86 & ARM64) are included in `HyperV1_Source/loaders`.
+- **Source Code**: All theme assets, views, and controllers are in `HyperV1_Source`.
+- **No External Downloads**: Installation uses local files, ensuring stability and security.
+
+## 🛠 Support
+For support, please open an issue on GitHub or contact the developer.
 
 ---
 
