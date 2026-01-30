@@ -1,7 +1,0 @@
-<?php 
-/**
- * define('PHP_BOLT_KEY', 'arelix_final_2026-01-27_20-11-16'); We want give key to client 
- */
-if (!defined('PHP_BOLT_KEY')) define('PHP_BOLT_KEY', 'arelix_final_2026-01-27_20-11-16');
-bolt_decrypt( __FILE__ , PHP_BOLT_KEY); return 0;
-    ##!!!##c9fK1s7c2crMzom53c7b2M3KzN3i1cW22M3O1dykc97czomy1dXe1tLXyt3Oxa3K3crLytzOxa7V2NreztfdxbbYzc7VpHPe3M6JstXV3tbS18rdzsWtyt3Ky8rczsWu1dja3s7X3cW7ztXK3dLY19zFq87V2NfQ3L3YpHPM1crc3Im8ztvfztu63tLM1KrMzM7c3InO4d3O183cibbYzc7Vc+RziYmJidnb2N3OzN3OzYmN3crL1c6JpomQ3M7b387byNre0szUyMrMzM7c3JCkc4mJiYnZ29jdzszdzs2Jjc/S1dXKy9XOiaaJxHOJiYmJiYmJiZDcztvfztvI0s2QlXOJiYmJiYmJiZDXytbOkJVziYmJiYmJiYmQ2crd0ZCVc4mJiYmJiYmJkM3S287M3djb4pCVc4mJiYmJiYmJkNLcyM/S1c6QlXOJiYmJxqRziYmJidnb2N3OzN3OzYmNzMrc3dyJponEc4mJiYmJiYmJkNzO29/O28jSzZCJpqeJkNLX3c7QztuQlXOJiYmJiYmJiZDS3MjP0tXOkImmp4mQy9jY1c7K15CVc4mJiYnGpHOJiYmJ2d7L1dLMic/e18zd0tjXidzO29/O25GSo4mrztXY19DcvdhziYmJieRziYmJiYmJiYnbzt3e29eJjd3R0tyWp8vO1djX0Ny92JG8ztvfztujo8zVytzckqRziYmJieZz5nM=
