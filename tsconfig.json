@@ -1,0 +1,77 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "es2020",
+    "jsx": "react",
+    "moduleResolution": "node",
+    "lib": [
+      "es2019",
+      "dom"
+    ],
+    "strict": true,
+    "noEmit": true,
+    "sourceMap": true,
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+  "esModuleInterop": true,
+  "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    
+    "paths": {
+      "@/*": [
+        "./resources/scripts/*"
+      ],
+      "@resources/*": [
+        "./resources/scripts/*"
+      ],
+      "@definitions/*": [
+        "./resources/scripts/api/definitions/*"
+      ],
+      "@feature/*": [
+        "./resources/scripts/components/server/features/*"
+      ],
+      "@arelix/*": [
+        "./arelix/*"
+      ],
+      "@arelix/themes/arelix/*": [
+        "arelix/themes/arelix/*"
+      ],
+      "@arelix/addons/*": [
+        "arelix/addons/*"
+      ],
+      "@arelix/addons/theme-settings/*": [
+        "arelix/addons/theme-settings/*"
+      ],
+      "@arelix/addons/admin-theme-settings/*": [
+        "arelix/addons/admin-theme-settings/*"
+      ],
+      "@arelix/addons/recycle-bin/*": [
+        "arelix/addons/recycle-bin/*"
+      ],
+      "@arelix/addons/notifications/*": [
+        "arelix/addons/notifications/*"
+      ],
+      "@arelix/addons/alerts/*": [
+        "arelix/addons/alerts/*"
+      ]
+    },
+    "plugins": [
+      {
+        "name": "typescript-plugin-tw-template"
+      }
+    ],
+    "typeRoots": [
+      "node_modules/@types"
+    ]
+  },
+  "include": [
+    "./resources/scripts/**/*",
+    "./arelix/themes/**/*",
+    "./arelix/addons/**/*"
+  ],
+  "exclude": [
+    "/node_modules/"
+  ]
+}

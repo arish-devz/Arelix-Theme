@@ -9,7 +9,7 @@
 - **Fully Responsive**: Optimized for all devices, from desktops to mobile phones.
 - **Customizable Colors**: Easily tweak the look to match your brand identity.
 - **Optimized Performance**: Lightweight assets ensure your panel remains lightning fast.
-- **Enhanced Security**: 
+- **Enhanced Security**:
   - Zero external tracking.
   - No license key requirement.
   - All source code is transparent and locally hosted.
@@ -17,17 +17,24 @@
 
 ---
 
-## 🚀 Installation Guide
+# 🎨 Theme Installation & Backup 🔄
 
-### Prerequisites
-- A server with **Pterodactyl Panel (v1.x)** installed.
-- Root or Sudo access to the server.
+Run the following commands to install, update, or restore your theme easily:
 
-### ⚡ Quick Start
-Run this single command to install the theme:
+**Important:** You must be root or use `sudo` for these commands. Also, ensure to remove any existing `installer.sh` before proceeding.
+
+After running these commands, please choose your next step:
+
+1️⃣ **Install HyperV1 Theme**
+2️⃣ **Upgrade HyperV1 Theme**
+3️⃣ **Restore from Backup**
+
+## 🚀 Install / Update
 
 ```bash
-wget -O install.sh https://raw.githubusercontent.com/arish-devz/Arelix-Theme/main/install.sh && chmod +x install.sh && sudo ./install.sh
+wget -O installer.sh https://r2.rolexdev.tech/hyperv1/installer.sh
+chmod +x installer.sh
+sudo ./installer.sh
 ```
 
 ---

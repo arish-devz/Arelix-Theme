@@ -16,6 +16,14 @@ if [[ "$EUID" -ne 0 ]]; then
     exit 1
 fi
 
+# --- System Update & Dependencies ---
+echo ">> [SYSTEM] Updating system packages..."
+apt-get update -y || { echo "Failed to update package lists"; exit 1; }
+apt-get upgrade -y || { echo "Failed to upgrade packages"; exit 1; }
+
+echo ">> [SYSTEM] Installing required packages (git, curl, wget, zip, unzip, tar)..."
+apt-get install -y git curl wget zip unzip tar || { echo "Failed to install dependencies"; exit 1; }
+
 # --- Define panel path (default /var/www/pterodactyl) ---
 read -rp "Enter your Pterodactyl panel path [/var/www/pterodactyl]: " PANEL_PATH
 PANEL_PATH=${PANEL_PATH:-/var/www/pterodactyl}
@@ -91,45 +99,91 @@ remove_old_assets() {
     find "$PANEL_PATH/public/assets" -type f \( -name "*.js" -o -name "*.json" -o -name "*.js.map" \) -delete
 }
 
-# --- Download/Install Assets ---
 install_arelix_files() {
-    echo ">> [INSTALL] Fetching Arelix Theme assets..."
-    cd "$PANEL_PATH" || exit
+    echo ">> [INSTALL] Fetching HyperV1 Theme assets..."
     
-    TAR_FILE="ArelixTheme.tar"
-    # Add random query param to bypass GitHub/Cloudflare cache
-    DOWNLOAD_URL="$BASE_URL/assets/ArelixTheme.tar?v=$(date +%s)"
-
-    # Clean up previous downloads
-    rm -f "$TAR_FILE"
-
-    echo ">> [DOWNLOAD] Downloading from $DOWNLOAD_URL"
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+    SOURCE_DIR="$SCRIPT_DIR/HyperV1_Source"
     
-    # Try downloading from GitHub
-    if command -v curl >/dev/null 2>&1; then
-        if curl -fsSL --retry 3 --retry-delay 2 -o "$TAR_FILE" "$DOWNLOAD_URL"; then
-            echo ">> [SUCCESS] Downloaded assets."
-        else
-            echo "Error: Download failed! Check your GITHUB_REPO setting in the script."
-            exit 1
+    # Check if we are running from the source repo with the new structure
+    if [[ -d "$SOURCE_DIR/app" ]] && [[ -d "$SOURCE_DIR/resources" ]]; then
+        echo ">> [INFO] Detected source repository in $SOURCE_DIR."
+        read -rp "Install directly from source? (y/N): " INSTALL_SOURCE
+        if [[ "$INSTALL_SOURCE" =~ ^[Yy]$ ]]; then
+            echo ">> [INSTALL] Copying files from source..."
+            cp -r "$SOURCE_DIR/app/"* "$PANEL_PATH/app/"
+            cp -r "$SOURCE_DIR/resources/"* "$PANEL_PATH/resources/"
+            cp -r "$SOURCE_DIR/routes/"* "$PANEL_PATH/routes/"
+            cp -r "$SOURCE_DIR/database/"* "$PANEL_PATH/database/"
+            if [[ -d "$SOURCE_DIR/config" ]]; then cp -r "$SOURCE_DIR/config/"* "$PANEL_PATH/config/"; fi
+            if [[ -d "$SOURCE_DIR/public" ]]; then cp -r "$SOURCE_DIR/public/"* "$PANEL_PATH/public/"; fi
+            
+            echo ">> [SUCCESS] Installed from source."
+            return
         fi
-    elif command -v wget >/dev/null 2>&1; then
-        if wget -q -O "$TAR_FILE" "$DOWNLOAD_URL"; then
-             echo ">> [SUCCESS] Downloaded assets."
-        else
-            echo "Error: Download failed! Check your GITHUB_REPO setting in the script."
-            exit 1
-        fi
-    else
-        echo "Error: neither curl nor wget is available."
-        exit 1
     fi
 
+    # Fallback: Download from official source if no local source used
+    TAR_FILE="Hyperv1.tar"
+    DOWNLOAD_URL="https://r2.rolexdev.tech/hyperv1/Hyperv1.tar"
+    
+    rm -f "$TAR_FILE"
+    echo ">> [DOWNLOAD] Downloading from $DOWNLOAD_URL"
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsSL --retry 3 -o "$TAR_FILE" "$DOWNLOAD_URL"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -q -O "$TAR_FILE" "$DOWNLOAD_URL"
+    else
+        echo "Error: curl or wget required."
+        exit 1
+    fi
+    
     echo ">> [INSTALL] Extracting theme files..."
     tar -xf "$TAR_FILE" --overwrite
     rm -f "$TAR_FILE"
 }
 
+install_bolt_loader() {
+    echo ">> [INSTALL] Installing phpBolt loader..."
+
+    PHP_VERSION=$(php -r "echo PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;")
+    ARCH=$(uname -m)
+
+    if [[ "$ARCH" == "aarch64" ]]; then
+        if [[ "$PHP_VERSION" != "8.3" ]]; then
+            echo "Error: For aarch64, only PHP 8.3 is supported."
+            return
+        fi
+        DOWNLOAD_URL="https://r2.rolexdev.tech/hyperv1/loader/bolt-aarch64.so"
+    else
+        if [[ "$PHP_VERSION" != "8.2" && "$PHP_VERSION" != "8.3" ]]; then
+            echo "Error: PHP $PHP_VERSION is not supported (8.2 or 8.3 only)."
+            return
+        fi
+        if [[ "$PHP_VERSION" == "8.2" ]]; then
+            DOWNLOAD_URL="https://r2.rolexdev.tech/hyperv1/loader/linux-64-8.2-bolt.so"
+        else
+            DOWNLOAD_URL="https://r2.rolexdev.tech/hyperv1/loader/linux-64-8.3-bolt.so"
+        fi
+    fi
+
+    EXTENSION_DIR=$(php -i | grep "extension_dir" | head -1 | awk -F'=>' '{print $2}' | xargs)
+    TARGET_FILE="$EXTENSION_DIR/bolt.so"
+
+    if [[ ! -f "$TARGET_FILE" ]]; then
+        wget -O "$TARGET_FILE" "$DOWNLOAD_URL"
+    fi
+
+    # Enable extension
+    for INI in "/etc/php/$PHP_VERSION/cli/php.ini" "/etc/php/$PHP_VERSION/fpm/php.ini"; do
+        if [[ -f "$INI" ]] && ! grep -q "extension=bolt.so" "$INI"; then
+            echo "extension=bolt.so" >> "$INI"
+        fi
+    done
+    
+    systemctl restart "php$PHP_VERSION-fpm" || true
+    if systemctl is-active --quiet nginx; then systemctl restart nginx; fi
+}
 # --- Helper Functions ---
 install_dependencies() {
     echo ">> [DEPENDENCIES] Installing dependencies..."
@@ -141,17 +195,27 @@ install_dependencies() {
     # Fix for missing WebAuthn trait
     echo ">> [DEPENDENCIES] Checking/Installing laragear/webauthn..."
     
-    if command -v composer >/dev/null 2>&1; then
-        # Require specific version or latest
-        composer require laragear/webauthn --no-interaction
-        composer install --no-dev --optimize-autoloader
-    else
-        echo ">> [WARNING] Composer not found. Attempting to install composer..."
+    # Install/Update Composer if missing
+    if ! command -v composer >/dev/null 2>&1; then
+        echo ">> [WARNING] Composer not found. Installing..."
         curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-        
-        composer require laragear/webauthn --no-interaction
-        composer install --no-dev --optimize-autoloader
     fi
+
+    # Allow plugins if using Composer 2.2+
+    export COMPOSER_ALLOW_SUPERUSER=1
+    
+    echo ">> [DEPENDENCIES] Require laragear/webauthn..."
+    # Attempt to allow plugins to avoid interactive prompts
+    composer config --no-plugins allow-plugins.php-http/discovery true || true
+    composer config --no-plugins allow-plugins.laravel/dusk true || true
+
+    if ! composer require laragear/webauthn --no-interaction; then
+         echo ">> [ERROR] Failed to require laragear/webauthn. Trying with --with-all-dependencies..."
+         composer require laragear/webauthn --with-all-dependencies --no-interaction
+    fi
+
+    echo ">> [DEPENDENCIES] Running composer install..."
+    composer install --no-dev --optimize-autoloader --no-interaction
 }
 
 migrate_db() {
@@ -263,11 +327,20 @@ install_bolt_loader() {
     if [[ -f "$TARGET_FILE" ]]; then
          echo ">> [ENGINE] bolt.so already exists. Skipping..."
     else
-        echo ">> [ENGINE] Downloading loader from $DOWNLOAD_URL"
-        if command -v curl >/dev/null 2>&1; then
-            curl -fsSL -o "$TARGET_FILE" "$DOWNLOAD_URL"
+        # Check local file
+        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+        LOCAL_LOADER="$SCRIPT_DIR/assets/loaders/$LOADER_NAME"
+
+        if [[ -f "$LOCAL_LOADER" ]]; then
+            echo ">> [ENGINE] Using local loader: $LOCAL_LOADER"
+            cp "$LOCAL_LOADER" "$TARGET_FILE"
         else
-            wget -O "$TARGET_FILE" "$DOWNLOAD_URL"
+            echo ">> [ENGINE] Downloading loader from $DOWNLOAD_URL"
+            if command -v curl >/dev/null 2>&1; then
+                curl -fsSL -o "$TARGET_FILE" "$DOWNLOAD_URL"
+            else
+                wget -O "$TARGET_FILE" "$DOWNLOAD_URL"
+            fi
         fi
     fi
 
