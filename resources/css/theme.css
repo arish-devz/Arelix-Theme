@@ -1,0 +1,11 @@
+/* Main Theme CSS */
+:root {
+    --primary-color: #3b82f6;
+    --background-color: #0f172a;
+    --text-color: #f8fafc;
+}
+
+body {
+    background-color: var(--background-color) !important;
+    color: var(--text-color) !important;
+}
