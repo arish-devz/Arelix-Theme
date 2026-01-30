@@ -1,22 +1,3 @@
-# 🎨 Arelix Theme for Pterodactyl
-
-> The ultimate premium, dark-mode inspired theme for your Pterodactyl Panel.
-
-![Arelix Theme Banner](https://via.placeholder.com/800x200.png?text=Arelix+Theme+Banner)
-
-## ✨ Features
-- **Modern Glassmorphism UI**: A stunning, high-contrast design that feels premium.
-- **Fully Responsive**: Optimized for all devices, from desktops to mobile phones.
-- **Customizable Colors**: Easily tweak the look to match your brand identity.
-- **Optimized Performance**: Lightweight assets ensure your panel remains lightning fast.
-- **Enhanced Security**:
-  - Zero external tracking.
-  - No license key requirement.
-  - All source code is transparent and locally hosted.
-- **One-Click Updates**: In-app updater connects directly to this repository.
-
----
-
 # 🎨 Arelix Theme
 
 A modern, responsive, and feature-rich theme for Pterodactyl.
@@ -53,6 +34,19 @@ The script will prompt you to choose an action:
 - **1️⃣ Install Arelix Theme**: Installs the theme and the required `bolt.so` loader from the local source.
 - **2️⃣ Upgrade Arelix Theme**: Updates existing theme files.
 - **3️⃣ Restore from Backup**: Restores a previous Pterodactyl backup.
+
+### 4. Uninstalling / Resetting
+To effectively remove the theme and restore your panel to its previous state:
+
+1.  Run the installer: `sudo ./install.sh`
+2.  Select **Option 3: Restore from Backup**.
+3.  Choose the backup created before you installed the theme.
+
+If you wish to remove the theme installer files from your server:
+```bash
+cd ~
+rm -rf Arelix-Theme
+```
 
 ## 📦 What's Included?
 This repository contains:
